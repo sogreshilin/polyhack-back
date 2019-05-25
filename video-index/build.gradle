@@ -39,6 +39,7 @@ dependencies {
     compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
     compile group: 'io.swagger', name: 'swagger-annotations', version: '1.5.22'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.559'
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework:spring-test:2.5'
