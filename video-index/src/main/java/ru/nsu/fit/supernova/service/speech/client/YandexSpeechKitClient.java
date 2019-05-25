@@ -6,11 +6,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import ru.nsu.fit.supernova.service.speech.client.dto.LongAudioFileRecognitionRequest;
@@ -38,26 +34,26 @@ public class YandexSpeechKitClient {
     public String initializeLongAudioFileRecognition(String fileUrl) {
 
         LongAudioFileRecognitionRequest payload = new LongAudioFileRecognitionRequest(
-            new LongAudioFileRecognitionRequest.Config(DEFAULT, folderId),
-            new LongAudioFileRecognitionRequest.Audio(fileUrl)
+                new LongAudioFileRecognitionRequest.Config(DEFAULT, folderId),
+                new LongAudioFileRecognitionRequest.Audio(fileUrl)
         );
 
         ResponseEntity<LongAudioFileRecognitionResponse> response = restTemplate.exchange(
-            baseUrl + "/speech/stt/v2/longRunningRecognize",
-            HttpMethod.POST,
-            requestEntity(payload),
-            LongAudioFileRecognitionResponse.class
+                baseUrl + "/speech/stt/v2/longRunningRecognize",
+                HttpMethod.POST,
+                requestEntity(payload),
+                LongAudioFileRecognitionResponse.class
         );
 
         return Optional.ofNullable(response.getBody())
-            .map(LongAudioFileRecognitionResponse::getId)
-            .orElseThrow(() -> new RuntimeException(
-                "Unable to start long audio file recognition operation for file with url " + fileUrl
-            ));
+                .map(LongAudioFileRecognitionResponse::getId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Unable to start long audio file recognition operation for file with url " + fileUrl
+                ));
     }
 
     private HttpEntity<LongAudioFileRecognitionRequest> requestEntity(
-        LongAudioFileRecognitionRequest payload
+            LongAudioFileRecognitionRequest payload
     ) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", String.format("Bearer %s", serviceAccountIamToken));
