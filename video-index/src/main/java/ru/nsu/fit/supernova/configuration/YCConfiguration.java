@@ -11,11 +11,6 @@ import ru.nsu.fit.supernova.service.factory.S3ClientFactory;
 @Getter
 public class YCConfiguration {
 
-    private static final String TITLE_SECRET_KEY = "Secret key";
-    private static final String TITLE_ACCESS_KEY = "Access key";
-    private static final String TITLE_ENDPOINT = "Endpoint";
-
-
     @Value("${yc.s3.access.key:#{null}}")
     private String accessKey;
 
