@@ -1,4 +1,4 @@
-package ru.nsu.fit.supernova.service;
+package ru.nsu.fit.supernova.service.video;
 
 import java.io.File;
 import java.io.IOException;
