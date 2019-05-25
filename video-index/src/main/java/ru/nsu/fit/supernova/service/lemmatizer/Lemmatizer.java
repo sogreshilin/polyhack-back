@@ -2,8 +2,10 @@ package ru.nsu.fit.supernova.service.lemmatizer;
 
 import java.util.List;
 
+import ru.nsu.fit.supernova.model.WordTime;
+
 public interface Lemmatizer {
 
-    List<String> lemmas(String text);
+    List<WordTime> lemmas(List<WordTime> wordTime);
 
 }
