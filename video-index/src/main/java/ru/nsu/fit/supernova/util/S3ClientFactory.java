@@ -1,4 +1,4 @@
-package ru.nsu.fit.supernova.service.factory;
+package ru.nsu.fit.supernova.util;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
