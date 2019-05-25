@@ -10,8 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.nsu.fit.supernova.model.Video;
-import ru.nsu.fit.supernova.repository.VideoRepository;
+import ru.nsu.fit.supernova.model.MultiMediaFile;
+import ru.nsu.fit.supernova.model.StatusType;
+import ru.nsu.fit.supernova.repository.MultiMediaRepository;
 import ru.nsu.fit.supernova.service.yc.YCService;
 import ws.schild.jave.AudioAttributes;
 import ws.schild.jave.Encoder;
@@ -28,14 +29,13 @@ public class VideoConvertingService {
     private static final int READ_TIMEOUT = 10000;
 
     private final YCService ycService;
-    private final VideoRepository videoRepository;
+    private final MultiMediaRepository multiMediaRepository;
 
-    public URL convertFromUrl(String fileUrl) {
-        Optional<Video> optionalVideo = videoRepository.findByUrl(fileUrl);
-
+    public MultiMediaFile convertFromUrl(String fileUrl) {
+        Optional<MultiMediaFile> optionalMultiMediaFile = multiMediaRepository.findByExternalVideoUrl(fileUrl);
         try {
-            if (optionalVideo.isPresent()) {
-                return new URL("https://storage.yandexcloud.net/polyhack/" + optionalVideo.get().getId() + ".ogg");
+            if (optionalMultiMediaFile.isPresent()) {
+                return optionalMultiMediaFile.get();
             } else {
                 File source = File.createTempFile("input", ".tmp");
 
@@ -61,11 +61,15 @@ public class VideoConvertingService {
                 encoder.encode(new MultimediaObject(source), target, attrs);
                 InputStream targetStream = FileUtils.openInputStream(target);
 
-                Video video = videoRepository.save(new Video().setUrl(fileUrl));
-                return ycService.uploadFile(video.getId(), targetStream);
+                MultiMediaFile multiMediaFile = multiMediaRepository.save(new MultiMediaFile().setExternalVideoUrl(fileUrl));
+                multiMediaFile.setInternalAudioUrl(ycService.uploadFile(multiMediaFile.getId(), targetStream).toString());
+                return multiMediaRepository.save(multiMediaFile.setStatus(StatusType.CREATED));
             }
         } catch (IOException | EncoderException e) {
-            throw new RuntimeException(e);
+            return multiMediaRepository.save(new MultiMediaFile()
+                .setExternalVideoUrl(fileUrl)
+                .setStatus(StatusType.FAILED)
+                .setMessage(e.getMessage()));
         }
     }
 }
