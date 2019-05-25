@@ -1,6 +1,7 @@
 package ru.nsu.fit.supernova.service.speech.client.dto;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -30,10 +31,15 @@ public class OperationResultsResponse {
             @Valid @NotNull @JsonProperty("word") String word,
             @JsonProperty("confidence") Double confidence
         ) {
-            this.startTime = new BigDecimal(startTime.substring(0, startTime.length() - 1));
-            this.endTime = new BigDecimal(endTime.substring(0, endTime.length() - 1));
+            this.startTime = parseTime(startTime);
+            this.endTime = parseTime(endTime);
             this.word = word;
             this.confidence = confidence;
+        }
+
+        private BigDecimal parseTime(String string) {
+            return new BigDecimal(string.substring(0, string.length() - 1))
+                .setScale(6, RoundingMode.DOWN);
         }
     }
 
