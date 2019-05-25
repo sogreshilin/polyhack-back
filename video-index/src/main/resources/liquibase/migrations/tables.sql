@@ -1,18 +1,21 @@
 -- liquibase formatted SQL
 
 
--- changeset a.boltava:create-video
+-- changeset a.boltava:create-multi_media_file
 
-CREATE TABLE video
+CREATE TABLE multi_media_file
 (
     id  BIGSERIAL PRIMARY KEY,
-    url TEXT UNIQUE NOT NULL
+    external_video_url TEXT UNIQUE NOT NULL,
+    internal_audio_url TEXT UNIQUE,
+    status TEXT NOT NULL,
+    message TEXT
 );
 
-CREATE INDEX video__url_index ON video (url);
+CREATE INDEX multi_media_file__external_video_url_index ON multi_media_file (external_video_url);
 
--- rollback DROP INDEX video__url_index;
--- rollback DROP TABLE video;
+-- rollback DROP INDEX multi_media_file__external_video_url_index;
+-- rollback DROP TABLE multi_media_file;
 
 
 -- changeset a.boltava:create-video-index
@@ -20,15 +23,15 @@ CREATE INDEX video__url_index ON video (url);
 CREATE TABLE video_lemma_time
 (
     id         BIGSERIAL PRIMARY KEY,
-    video_id   BIGINT         NOT NULL REFERENCES video (id),
+    multi_media_file_id   BIGINT         NOT NULL REFERENCES multi_media_file (id),
     lemma      VARCHAR(64)    NOT NULL,
     start_time NUMERIC(10, 6) UNIQUE NOT NULL
 );
 
 
 CREATE INDEX video_lemma_time__time_index ON video_lemma_time (lemma);
-CREATE INDEX video_lemma_time__video_id_index ON video_lemma_time (video_id);
+CREATE INDEX video_lemma_time__multi_media_file_id_index ON video_lemma_time (multi_media_file_id);
 
--- rollback DROP INDEX video_lemma_time__video_id_index;
+-- rollback DROP INDEX video_lemma_time__multi_media_file_id_index;
 -- rollback DROP INDEX video_lemma_time__time_index;
 -- rollback DROP TABLE video_lemma_time;

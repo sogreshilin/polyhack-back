@@ -9,7 +9,6 @@ public class Path {
     private String url;
 
     @JsonCreator
-
     public Path(@JsonProperty("url") String url) {
         this.url = url;
     }

@@ -23,13 +23,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import ru.nsu.fit.supernova.model.WordTime;
 
 
 @Service
-@Transactional
 @Slf4j
 public class LemmatizerImpl implements Lemmatizer {
 
