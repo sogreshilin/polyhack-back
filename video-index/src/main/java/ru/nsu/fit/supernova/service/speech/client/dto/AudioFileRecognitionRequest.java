@@ -3,7 +3,7 @@ package ru.nsu.fit.supernova.service.speech.client.dto;
 import lombok.Value;
 
 @Value
-public class LongAudioFileRecognitionRequest {
+public class AudioFileRecognitionRequest {
     private Config config;
     private Audio audio;
 
