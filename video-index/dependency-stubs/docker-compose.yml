@@ -1,0 +1,10 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - '15800:5432'
+    environment:
+      POSTGRES_DB: supernova_db
+      POSTGRES_USER: supernova_db
+      POSTGRES_PASSWORD: supernova_db
