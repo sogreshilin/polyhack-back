@@ -10,7 +10,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -29,9 +33,6 @@ public class LemmatizerImpl implements Lemmatizer {
     @Value("${service.texterra.baseUrl}")
     private String BASE_URL;
 
-
-    private final static String endpoint = "http://api.ispras.ru/texterra/v1/nlp?targetType=lemma&apikey=53690b89aea841305c8e2221f21a685d45eb8fd4";
-
     @Override
     public List<String> lemmas(String text) {
         HttpHeaders headers = new HttpHeaders();
@@ -41,21 +42,20 @@ public class LemmatizerImpl implements Lemmatizer {
         HttpEntity requestEntity = new HttpEntity<>(requestBody, headers);
 
         String url = String.format("%s?targetType=lemma&apikey=%s", BASE_URL, API_KEY);
-        System.out.println(url);
 
         ResponseEntity<List<Response.ResponseEntry>> response =
-                new RestTemplate().exchange(
-                        url,
-                        HttpMethod.POST,
-                        requestEntity,
-                        new ParameterizedTypeReference<List<Response.ResponseEntry>>() {
-                        }
-                );
+            new RestTemplate().exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                new ParameterizedTypeReference<List<Response.ResponseEntry>>() {
+                }
+            );
 
         return Optional.ofNullable(response.getBody())
-                .map(lemmasList -> lemmasList.get(0))
-                .map(lemmaDetails -> lemmaDetails.getAnnotations().getLemma().stream().map(Response.Lemma::getValue).collect(Collectors.toList()))
-                .orElseGet(Collections::emptyList);
+            .map(lemmasList -> lemmasList.get(0))
+            .map(lemmaDetails -> lemmaDetails.getAnnotations().getLemma().stream().map(Response.Lemma::getValue).collect(Collectors.toList()))
+            .orElseGet(Collections::emptyList);
     }
 
 }
