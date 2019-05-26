@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.nsu.fit.supernova.model.Indexing;
 import ru.nsu.fit.supernova.model.MultiMediaFile;
 import ru.nsu.fit.supernova.model.VideoLemmaTime;
+import ru.nsu.fit.supernova.repository.MultiMediaRepository;
 import ru.nsu.fit.supernova.repository.VideoLemmaTimeRepository;
 import ru.nsu.fit.supernova.service.lemmatizer.Lemmatizer;
 
@@ -19,19 +20,29 @@ import ru.nsu.fit.supernova.service.lemmatizer.Lemmatizer;
 public class VideoIndexService {
 
     private final Lemmatizer lemmatizer;
-    private final VideoLemmaTimeRepository videoLemmaTimeRepository;
+    private final VideoLemmaTimeRepository repository;
+    private final MultiMediaRepository multiMediaRepository;
 
     public List<Indexing.SearchResult> findByTokens(List<String> tokens) {
         List<String> lemmas = lemmatizer.stringLemmas(tokens);
-        List<VideoLemmaTime> videoLemmaTimeList = videoLemmaTimeRepository.findAllByLemmaInOrderByStartTime(lemmas);
+        List<VideoLemmaTime> videoLemmaTimeList = repository.findAllByLemmaInOrderByStartTime(lemmas);
         return convertToApi(videoLemmaTimeList);
     }
 
     public List<Indexing.SearchResult> findByTokens(List<String> tokens, Long videoId) {
         List<String> lemmas = lemmatizer.stringLemmas(tokens);
-        List<VideoLemmaTime> videoLemmaTimeList = videoLemmaTimeRepository
+        List<VideoLemmaTime> videoLemmaTimeList = repository
             .findAllByLemmaInAndMultiMediaFile_IdOrderByStartTime(lemmas, videoId);
         return convertToApi(videoLemmaTimeList);
+    }
+
+    public Indexing.SearchResult getAllWordsByVideoId(long videoId) {
+        MultiMediaFile file = multiMediaRepository.findById(videoId).orElseThrow(() -> new RuntimeException("File with such id not found"));
+        List<VideoLemmaTime> vlts = repository.findAllByMultiMediaFile_IdOrderByStartTime(videoId);
+        List<Indexing.WordInfo> words = vlts.stream()
+            .map(vlt -> new Indexing.WordInfo(vlt.getLemma(), vlt.getStartTime()))
+            .collect(Collectors.toList());
+        return new Indexing.SearchResult(file.getId(), file.getExternalVideoUrl(), words);
     }
 
     private List<Indexing.SearchResult> convertToApi(List<VideoLemmaTime> videoLemmaTimeList) {
@@ -47,5 +58,4 @@ public class VideoIndexService {
                 return new Indexing.SearchResult(file.getId(), file.getExternalVideoUrl(), wordInfos);
             }).collect(Collectors.toList());
     }
-
 }
