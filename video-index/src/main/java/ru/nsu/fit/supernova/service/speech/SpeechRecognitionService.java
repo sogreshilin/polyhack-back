@@ -35,7 +35,7 @@ public class SpeechRecognitionService {
         List<OperationResultsResponse.Chunk> chunks = results.getResponse().getChunks().stream()
             .filter(c -> c.getChannelTag() == 1).collect(Collectors.toList());
 
-        return chunks.stream().map(Chunk::getAlternatives).collect(Collectors.toList()).stream()
+        return chunks.stream().map(Chunk::getAlternatives)
             .flatMap(Collection::stream)
             .map(OperationResultsResponse.Alternative::getWords)
             .flatMap(Collection::stream)
