@@ -21,7 +21,6 @@ import ws.schild.jave.EncodingAttributes;
 import ws.schild.jave.MultimediaObject;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class VideoConvertingService {
 
@@ -61,9 +60,11 @@ public class VideoConvertingService {
                 encoder.encode(new MultimediaObject(source), target, attrs);
                 InputStream targetStream = FileUtils.openInputStream(target);
 
-                MultiMediaFile multiMediaFile = multiMediaRepository.save(new MultiMediaFile().setExternalVideoUrl(fileUrl));
+                MultiMediaFile multiMediaFile = multiMediaRepository.save(new MultiMediaFile()
+                    .setExternalVideoUrl(fileUrl)
+                    .setStatus(StatusType.CREATED));
                 multiMediaFile.setInternalAudioUrl(ycService.uploadFile(multiMediaFile.getId(), targetStream).toString());
-                return multiMediaRepository.save(multiMediaFile.setStatus(StatusType.CREATED));
+                return multiMediaRepository.save(multiMediaFile);
             }
         } catch (IOException | EncoderException e) {
             return multiMediaRepository.save(new MultiMediaFile()
