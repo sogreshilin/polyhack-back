@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import ru.nsu.fit.supernova.model.WordTime;
 import ru.nsu.fit.supernova.service.speech.client.YandexSpeechKitClient;
 import ru.nsu.fit.supernova.service.speech.client.dto.OperationResultsResponse;
+import ru.nsu.fit.supernova.service.speech.client.dto.OperationResultsResponse.Chunk;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +32,11 @@ public class SpeechRecognitionService {
             log.info("Thread was interrupted", e);
         }
 
-        OperationResultsResponse.Chunk chunk = results.getResponse().getChunks().stream()
-            .filter(c -> c.getChannelTag() == 1)
-            .findFirst().orElseThrow(() -> new RuntimeException("No chunk with channel tag = 1"));
+        List<OperationResultsResponse.Chunk> chunks = results.getResponse().getChunks().stream()
+            .filter(c -> c.getChannelTag() == 1).collect(Collectors.toList());
 
-        return chunk.getAlternatives().stream()
+        return chunks.stream().map(Chunk::getAlternatives)
+            .flatMap(Collection::stream)
             .map(OperationResultsResponse.Alternative::getWords)
             .flatMap(Collection::stream)
             .sorted(Comparator.comparing(OperationResultsResponse.Word::getStartTime))
