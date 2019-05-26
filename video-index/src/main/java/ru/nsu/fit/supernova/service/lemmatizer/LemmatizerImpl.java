@@ -45,10 +45,7 @@ public class LemmatizerImpl implements Lemmatizer {
         this.russianStopWords = new BufferedReader(new FileReader(new File(stopWordsUri))).lines().collect(Collectors.toSet());
     }
 
-    @Override
-    public List<WordTime> lemmas(List<WordTime> wordTime) {
-        String text = wordTime.stream().map(WordTime::getWord).collect(Collectors.joining(" "));
-
+    private Optional<List<Response.Lemma>> normalize(String text) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -64,15 +61,27 @@ public class LemmatizerImpl implements Lemmatizer {
                         }
                 );
 
-        return Optional.ofNullable(response.getBody())
+        return Optional
+                .ofNullable(response.getBody())
                 .map(lemmasList -> lemmasList.get(0))
-                .map(lemmaDetails -> {
-                    List<Response.Lemma> lemmas = lemmaDetails.getAnnotations().getLemma();
-                    return IntStream.range(0, lemmas.size())
-                            .mapToObj(index -> new WordTime(lemmas.get(index).getValue(), wordTime.get(index).getStartTime()))
-                            .filter(wt -> !this.russianStopWords.contains(wt.getWord()))
-                            .collect(Collectors.toList());
-                })
+                .map(details -> details.getAnnotations().getLemma());
+    }
+
+    @Override
+    public List<WordTime> lemmas(List<WordTime> wordTime) {
+        String text = wordTime.stream().map(WordTime::getWord).collect(Collectors.joining(" "));
+
+        return normalize(text).map(lemmas -> IntStream.range(0, lemmas.size())
+                .mapToObj(index -> new WordTime(lemmas.get(index).getValue(), wordTime.get(index).getStartTime()))
+                .filter(wt -> !this.russianStopWords.contains(wt.getWord()))
+                .collect(Collectors.toList()))
+                .orElseGet(Collections::emptyList);
+    }
+
+    @Override
+    public List<String> stringLemmas(List<String> strings) {
+        return normalize(String.join(" ", strings))
+                .map(lemmas -> lemmas.stream().map(Response.Lemma::getValue).collect(Collectors.toList()))
                 .orElseGet(Collections::emptyList);
     }
 
