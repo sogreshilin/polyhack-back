@@ -5,11 +5,11 @@
 
 CREATE TABLE multi_media_file
 (
-    id  BIGSERIAL PRIMARY KEY,
+    id                 BIGSERIAL PRIMARY KEY,
     external_video_url TEXT UNIQUE NOT NULL,
     internal_audio_url TEXT UNIQUE,
-    status TEXT NOT NULL,
-    message TEXT
+    status             TEXT        NOT NULL,
+    message            TEXT
 );
 
 CREATE INDEX multi_media_file__external_video_url_index ON multi_media_file (external_video_url);
@@ -22,10 +22,10 @@ CREATE INDEX multi_media_file__external_video_url_index ON multi_media_file (ext
 
 CREATE TABLE video_lemma_time
 (
-    id         BIGSERIAL PRIMARY KEY,
-    multi_media_file_id   BIGINT         NOT NULL REFERENCES multi_media_file (id),
-    lemma      VARCHAR(64)    NOT NULL,
-    start_time NUMERIC(10, 6) UNIQUE NOT NULL
+    id                  BIGSERIAL PRIMARY KEY,
+    multi_media_file_id BIGINT         NOT NULL REFERENCES multi_media_file (id),
+    lemma               VARCHAR(64)    NOT NULL,
+    start_time          NUMERIC(10, 6) NOT NULL
 );
 
 
