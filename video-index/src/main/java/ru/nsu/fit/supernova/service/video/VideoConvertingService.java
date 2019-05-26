@@ -7,9 +7,9 @@ import java.net.URL;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.nsu.fit.supernova.model.MultiMediaFile;
 import ru.nsu.fit.supernova.model.StatusType;
 import ru.nsu.fit.supernova.repository.MultiMediaRepository;
@@ -22,6 +22,7 @@ import ws.schild.jave.MultimediaObject;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class VideoConvertingService {
 
     private static final int CONNECT_TIMEOUT = 10000;
@@ -31,11 +32,14 @@ public class VideoConvertingService {
     private final MultiMediaRepository multiMediaRepository;
 
     public MultiMediaFile convertFromUrl(String fileUrl) {
+        log.info("Starting VideoConvertingService convertFromUrl({})", fileUrl);
         Optional<MultiMediaFile> optionalMultiMediaFile = multiMediaRepository.findByExternalVideoUrl(fileUrl);
         try {
             if (optionalMultiMediaFile.isPresent()) {
+                log.info("File was already processed. Audio url: {}", optionalMultiMediaFile.get().getInternalAudioUrl());
                 return optionalMultiMediaFile.get();
             } else {
+                log.info("Downloading video from {}", fileUrl);
                 File source = File.createTempFile("input", ".tmp");
 
                 FileUtils.copyURLToFile(
@@ -43,7 +47,8 @@ public class VideoConvertingService {
                     source,
                     CONNECT_TIMEOUT,
                     READ_TIMEOUT);
-
+                log.info("Video downloaded successfully");
+                log.info("Converting audio stream to OGG format");
                 File target = File.createTempFile("output", ".tmp");
 
                 AudioAttributes audio = new AudioAttributes();
@@ -63,10 +68,14 @@ public class VideoConvertingService {
                 MultiMediaFile multiMediaFile = multiMediaRepository.save(new MultiMediaFile()
                     .setExternalVideoUrl(fileUrl)
                     .setStatus(StatusType.CREATED));
-                multiMediaFile.setInternalAudioUrl(ycService.uploadFile(multiMediaFile.getId(), targetStream).toString());
+                log.info("Uploading audio to Yandex Cloud");
+                String audioUrl = ycService.uploadFile(multiMediaFile.getId(), targetStream).toString();
+                multiMediaFile.setInternalAudioUrl(audioUrl);
+                log.info("Upload success. Audio url: {}", audioUrl);
                 return multiMediaRepository.save(multiMediaFile);
             }
         } catch (IOException | EncoderException e) {
+            log.error("Error while file processing", e);
             return multiMediaRepository.save(new MultiMediaFile()
                 .setExternalVideoUrl(fileUrl)
                 .setStatus(StatusType.FAILED)

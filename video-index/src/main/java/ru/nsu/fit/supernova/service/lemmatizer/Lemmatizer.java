@@ -8,4 +8,6 @@ public interface Lemmatizer {
 
     List<WordTime> lemmas(List<WordTime> wordTime);
 
+    List<String> stringLemmas(List<String> strings);
+
 }
