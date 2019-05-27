@@ -4,13 +4,11 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.nsu.fit.supernova.model.Indexing.SearchResult;
 import ru.nsu.fit.supernova.service.index.VideoIndexService;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
 public class SearchController {
