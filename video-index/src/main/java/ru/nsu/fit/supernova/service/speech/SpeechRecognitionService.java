@@ -3,6 +3,7 @@ package ru.nsu.fit.supernova.service.speech;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
@@ -22,14 +23,16 @@ public class SpeechRecognitionService {
 
     public List<WordTime> recognizeAudioFile(String fileUrl) {
         OperationResultsResponse results = speechKitClient.initializeAudioFileRecognition(fileUrl);
-
+        String correlationId = UUID.randomUUID().toString();
         try {
+            log.info(String.format("Starting speechkit polling, url: %s, correlationId: %s", fileUrl, correlationId));
             while (!results.getDone()) {
                 results = speechKitClient.getOperationResults(results.getId());
                 Thread.sleep(TIMEOUT);
             }
+            log.info(String.format("Finished speechkit polling, correlationId: %s", correlationId));
         } catch (InterruptedException e) {
-            log.info("Thread was interrupted", e);
+            log.info(String.format("Exception while polling recognition result. correlationId: %s", correlationId), e);
         }
 
         List<OperationResultsResponse.Chunk> chunks = results.getResponse().getChunks().stream()

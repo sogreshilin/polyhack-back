@@ -26,7 +26,6 @@ public class VideoLemmaTimeService {
     public void save(List<WordTime> wordTimes, MultiMediaFile multiMediaFile) {
         multiMediaFile.setStatus(StatusType.COMPLETED);
         multiMediaRepository.save(multiMediaFile);
-        log.info("COMPLETED");
         videoLemmaTimeRepository.saveAll(wordTimes.stream().map(wordTime -> new VideoLemmaTime()
             .setLemma(wordTime.getWord())
             .setStartTime(wordTime.getStartTime())
