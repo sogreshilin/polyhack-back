@@ -29,6 +29,9 @@ public class MultiMediaFile {
     @Column(nullable = false, updatable = false)
     private Long id;
 
+    @Column
+    private String title;
+
     @Column(name = "external_video_url")
     private String externalVideoUrl;
 

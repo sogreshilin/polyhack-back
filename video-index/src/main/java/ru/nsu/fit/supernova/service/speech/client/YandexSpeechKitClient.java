@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import static ru.nsu.fit.supernova.service.speech.client.dto.AudioFileRecognitio
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class YandexSpeechKitClient {
     private final RestTemplate restTemplate;
 
@@ -36,6 +38,8 @@ public class YandexSpeechKitClient {
             new AudioFileRecognitionRequest.Config(DEFAULT, folderId),
             new AudioFileRecognitionRequest.Audio(fileUrl)
         );
+
+        log.info(payload.toString());
 
         ResponseEntity<OperationResultsResponse> response = restTemplate.exchange(
             "https://transcribe.api.cloud.yandex.net/speech/stt/v2/longRunningRecognize",
