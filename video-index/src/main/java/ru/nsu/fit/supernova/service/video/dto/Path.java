@@ -6,10 +6,10 @@ import lombok.Value;
 
 @Value
 public class Path {
-    private String url;
+    private Long id;
 
     @JsonCreator
-    public Path(@JsonProperty("url") String url) {
-        this.url = url;
+    public Path(@JsonProperty("id") Long id) {
+        this.id = id;
     }
 }

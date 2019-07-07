@@ -5,11 +5,13 @@
 
 CREATE TABLE multi_media_file
 (
-    id                 BIGSERIAL PRIMARY KEY,
+    id  BIGSERIAL PRIMARY KEY,
+    title TEXT,
     external_video_url TEXT UNIQUE NOT NULL,
     internal_audio_url TEXT UNIQUE,
-    status             TEXT        NOT NULL,
-    message            TEXT
+    status TEXT NOT NULL,
+    message TEXT,
+    course_id BIGINT NOT NULL REFERENCES course
 );
 
 CREATE INDEX multi_media_file__external_video_url_index ON multi_media_file (external_video_url);

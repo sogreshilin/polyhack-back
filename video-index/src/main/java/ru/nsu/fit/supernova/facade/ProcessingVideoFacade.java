@@ -25,15 +25,15 @@ public class ProcessingVideoFacade {
     private final VideoLemmaTimeService videoLemmaTimeService;
     private final MultiMediaRepository multiMediaRepository;
 
-    public void process(String url) {
-        MultiMediaFile multiMediaFile = videoConvertingService.convertFromUrl(url);
+    public void process(Long id) {
+        MultiMediaFile multiMediaFile = videoConvertingService.convertFile(id);
         if (multiMediaFile.getStatus() == StatusType.FAILED || multiMediaFile.getStatus() == StatusType.CREATED) {
-            log.info(String.format("Started audio processing. Url: %s, Id: %d", url, multiMediaFile.getId()));
+            log.info(String.format("Started audio processing. Url: %s, Id: %d", multiMediaFile.getExternalVideoUrl(), id));
             multiMediaRepository.save(multiMediaFile.setStatus(StatusType.PROCESSING));
             List<WordTime> extractedWords = speechRecognitionService.recognizeAudioFile(multiMediaFile.getInternalAudioUrl());
             List<WordTime> normalizedWords = lemmatizer.lemmas(extractedWords);
             videoLemmaTimeService.save(normalizedWords, multiMediaFile);
-            log.info(String.format("Finished audio processing. Url: %s, Id: %d", url, multiMediaFile.getId()));
+            log.info(String.format("Finished audio processing. Url: %s, Id: %d", multiMediaFile.getExternalVideoUrl(), id));
         }
     }
 }

@@ -31,19 +31,20 @@ public class VideoConvertingService {
     private final YCService ycService;
     private final MultiMediaRepository multiMediaRepository;
 
-    public MultiMediaFile convertFromUrl(String fileUrl) {
-        log.info("Starting VideoConvertingService convertFromUrl({})", fileUrl);
-        Optional<MultiMediaFile> optionalMultiMediaFile = multiMediaRepository.findByExternalVideoUrl(fileUrl);
+    public MultiMediaFile convertFile(Long id) {
+        log.info("Starting VideoConvertingService convertFile with id ({})", id);
+        Optional<MultiMediaFile> optionalMultiMediaFile = multiMediaRepository.findById(id);
+        MultiMediaFile multiMediaFile = optionalMultiMediaFile.get();
         try {
-            if (optionalMultiMediaFile.isPresent()) {
-                log.info("File was already processed. Audio url: {}", optionalMultiMediaFile.get().getInternalAudioUrl());
-                return optionalMultiMediaFile.get();
+            if (multiMediaFile.getInternalAudioUrl() != null) {
+                log.info("File was already processed. Audio url: {}", multiMediaFile.getInternalAudioUrl());
+                return multiMediaFile;
             } else {
-                log.info("Downloading video from {}", fileUrl);
+                log.info("Downloading video from {}", multiMediaFile.getExternalVideoUrl());
                 File source = File.createTempFile("input", ".tmp");
 
                 FileUtils.copyURLToFile(
-                    new URL(fileUrl),
+                    new URL(multiMediaFile.getExternalVideoUrl()),
                     source,
                     CONNECT_TIMEOUT,
                     READ_TIMEOUT);
@@ -65,9 +66,6 @@ public class VideoConvertingService {
                 encoder.encode(new MultimediaObject(source), target, attrs);
                 InputStream targetStream = FileUtils.openInputStream(target);
 
-                MultiMediaFile multiMediaFile = multiMediaRepository.save(new MultiMediaFile()
-                    .setExternalVideoUrl(fileUrl)
-                    .setStatus(StatusType.CREATED));
                 log.info("Uploading audio to Yandex Cloud");
                 String audioUrl = ycService.uploadFile(multiMediaFile.getId(), targetStream).toString();
                 multiMediaFile.setInternalAudioUrl(audioUrl);
@@ -76,10 +74,7 @@ public class VideoConvertingService {
             }
         } catch (IOException | EncoderException e) {
             log.error("Error while file processing", e);
-            return multiMediaRepository.save(new MultiMediaFile()
-                .setExternalVideoUrl(fileUrl)
-                .setStatus(StatusType.FAILED)
-                .setMessage(e.getMessage()));
+            return multiMediaRepository.save(multiMediaFile.setStatus(StatusType.FAILED).setMessage(e.getMessage()));
         }
     }
 }
